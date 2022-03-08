@@ -10,21 +10,41 @@ Currently made to search for items in stock at Zara
 Example Link: https://www.zara.com/us/en/plaid-blazer-p02010745.html
 """
 
+# Decision Constants
+timer = 20
+
 
 def main():
+    displayItem = True
     headers = {
         'user-agent':
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
     }
-    print("Email Stock Notifier for Zara")
+    print("""\
+    =====================================
+    |                                   |
+    |      Zara in-stock Notifier       |
+    |                                   |
+    =====================================
+    """)
     url = input("Input the url for the item: ")
     validateUrl(url)
-    size = input("Input the size of the item (xs/s/m/l/xl): ")
+    size = input("Input the size of the item (xs/s/m/l/xl/xxl): ")
     validateSize(size)
     while True:
         response = requestURL(
             headers, url)
         soup = getSoup(response)
+        if displayItem:
+            print("")
+            item = findItem(soup,
+                            "h1", "product-detail-info__header-name")
+            print("Searching for... " + item)
+            print("The process will continue to refresh every " +
+                  str(timer) + " seconds")
+            print("Press and hold ctrl + c to end the loop")
+            displayItem = False
+
         entry = findElement(
             soup, "span", "product-detail-size-info__main-label")
         if determineStock(entry):
@@ -32,8 +52,8 @@ def main():
             os.system('python3 emailNotifier.py ' + url)
             break
         else:
-            print("The product is out of stock")
-        time.sleep(60)
+            print("The " + item + " is out of stock in size: " + size.upper())
+        time.sleep(timer)
 
 
 def validateUrl(url):
@@ -50,7 +70,7 @@ def validateSize(size):
     if 0 < len(size) < 4:
         valid = True
 
-    if size.lower() == "xs" or size.lower() == "s" or size.lower() == "m" or size.lower() == "l" or size.lower() == "xl" or size.lower() == "xl":
+    if size.lower() == "xs" or size.lower() == "s" or size.lower() == "m" or size.lower() == "l" or size.lower() == "xl" or size.lower() == "xl" or size.lower() == "xxl":
         valid = True
     else:
         valid = False
@@ -72,6 +92,11 @@ def requestURL(headers, url):
 def getSoup(response):
     soup = BeautifulSoup(response.content, 'html.parser')
     return soup
+
+
+def findItem(soup, htmlElement, classEntry):
+    item = soup.find(htmlElement, {"class": classEntry})
+    return item.getText()
 
 
 def findElement(soup, htmlElement, classEntry):
