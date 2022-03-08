@@ -47,6 +47,7 @@ def main():
     2 : No
     """)
     default = input("Would you like to run the default inputs? (1 - 2): ")
+    validateDefault(default)
     default = convertDefault(default)
     if default:
         url = DEFAULTINPUTS["url"]
@@ -113,7 +114,7 @@ def validateDefault(default):
 
     if not valid:
         print("not a valid choice")
-        exit
+        exit()
 
 
 def validateUrl(url):
