@@ -2,6 +2,7 @@ import os
 import time
 import requests
 import validators
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
 """
@@ -9,31 +10,77 @@ Currently made to search for items in stock at Zara
 
 Example Link: https://www.zara.com/us/en/plaid-blazer-p02010745.html
 """
+load_dotenv()
 
-# Decision Constants
-timer = 20
+# Constants
+HEADERS = {
+    'user-agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
+}
+
+DICTSIZE = {
+    "0": "xs",
+    "1": "s",
+    "2": "m",
+    "3": "l",
+    "4": "xl",
+    "5": "xxl"
+}
+
+DEFAULTINPUTS = {
+    "url": "https://www.zara.com/us/en/plaid-blazer-p02010745.html",
+    "size": "M",
+    "timer": 20,
+    "email": os.getenv('RECEIVER')
+}
 
 
 def main():
-    displayItem = True
-    headers = {
-        'user-agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
-    }
     print("""\
     =====================================
     |                                   |
     |      Zara in-stock Notifier       |
     |                                   |
     =====================================
+
+    1 : Yes
+    2 : No
     """)
-    url = input("Input the url for the item: ")
-    validateUrl(url)
-    size = input("Input the size of the item (xs/s/m/l/xl/xxl): ")
-    validateSize(size)
+    default = input("Would you like to run the default inputs? (1 - 2): ")
+    default = convertDefault(default)
+    if default:
+        url = DEFAULTINPUTS["url"]
+        size = DEFAULTINPUTS["size"]
+        timer = DEFAULTINPUTS["timer"]
+        email = DEFAULTINPUTS["email"]
+    else:
+        url = input("Input the url for the item: ")
+        validateUrl(url)
+        print("""\
+
+        1 : XS
+        2 : S
+        3 : M
+        4 : L
+        5 : XL
+        6 : XXL
+        """)
+        size = input("Input the size of the item (1 - 6): ")
+        validateSize(size)
+        size = convertSize(size, DICTSIZE)
+
+        timer = input("Input the timer to refresh the item (1 - 60 seconds): ")
+        validateTimer(timer)
+        timer = int(timer)
+
+        email = input(
+            "Input the email you wish to recieve a notification once the product is in stock (email@gmail.com): ")
+        validateEmail(email)
+
+    displayItem = True
     while True:
         response = requestURL(
-            headers, url)
+            HEADERS, url)
         soup = getSoup(response)
         if displayItem:
             print("")
@@ -46,14 +93,27 @@ def main():
             displayItem = False
 
         entry = findElement(
-            soup, "span", "product-detail-size-info__main-label")
+            soup, "span", "product-detail-size-info__main-label", size)
         if determineStock(entry):
             print("The Product is in stock")
-            os.system('python3 emailNotifier.py ' + url)
+            os.system('python3 emailNotifier.py ' + email + ' ' + url)
             break
         else:
             print("The " + item + " is out of stock in size: " + size.upper())
         time.sleep(timer)
+
+
+def validateDefault(default):
+    valid = True
+    if len(default) != 1:
+        valid = False
+
+    if 0 > int(default) > 1:
+        valid = False
+
+    if not valid:
+        print("not a valid choice")
+        exit
 
 
 def validateUrl(url):
@@ -66,18 +126,45 @@ def validateUrl(url):
 
 
 def validateSize(size):
-    valid = False
-    if 0 < len(size) < 4:
-        valid = True
-
-    if size.lower() == "xs" or size.lower() == "s" or size.lower() == "m" or size.lower() == "l" or size.lower() == "xl" or size.lower() == "xl" or size.lower() == "xxl":
-        valid = True
-    else:
+    valid = True
+    if len(size) != 1:
         valid = False
 
-    if valid == False:
+    if 1 > int(size) > 6:
+        valid = False
+
+    if not valid:
         print("Not a valid size")
         exit()
+
+
+def validateTimer(timer):
+    valid = True
+    if 0 > len(timer) > 2:
+        valid = False
+
+    if 1 > int(timer) > 60:
+        valid = False
+
+    if not valid:
+        print("Not a valid time")
+        exit()
+
+
+def validateEmail(email):
+    if not validators.email(email):
+        print("Not a valid Email")
+        exit()
+
+
+def convertSize(size, dictSize):
+    return dictSize[size]
+
+
+def convertDefault(default):
+    if int(default) == 1:
+        return True
+    return False
 
 
 def requestURL(headers, url):
@@ -99,11 +186,11 @@ def findItem(soup, htmlElement, classEntry):
     return item.getText()
 
 
-def findElement(soup, htmlElement, classEntry):
+def findElement(soup, htmlElement, classEntry, size):
     divs = soup.find_all(
         htmlElement, {"class": classEntry})
     for entries in divs:
-        if entries.getText() == "M":
+        if entries.getText() == size.upper():
             entry = entries
             return entry
     print("The Element was not found")

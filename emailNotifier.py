@@ -5,7 +5,11 @@ import ssl
 from dotenv import load_dotenv
 
 """
-Open a terminal and use python -m smtpd -c DebuggingServer -n localhost:1025 if working on local
+Open a terminal and use the following if working on local
+
+python -m smtpd -c DebuggingServer -n localhost:1025
+
+Takes arguments .py (Reciever Email | Url)
 """
 # Decision Booleans
 onlineBOOL = True
@@ -17,8 +21,8 @@ PASSWORD = os.getenv('PASSWORD')
 
 # Load the email
 sender_email = os.getenv('USERNAME')
-receiver_email = os.getenv('SEND')
-url = sys.argv[1]
+receiver_email = sys.argv[1]
+url = sys.argv[2]
 message = """\
 Subject: Your Product is In-Stock!
 
@@ -55,10 +59,6 @@ def main():
             server.sendmail(sender_email, receiver_email, message)
             print("E-mail has been sent offline")
             server.close()
-
-
-def changeUrl(newUrl):
-    url = newUrl
 
 
 if __name__ == "__main__":
