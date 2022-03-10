@@ -12,7 +12,7 @@ python -m smtpd -c DebuggingServer -n localhost:1025
 Takes arguments .py (Reciever Email | Url)
 """
 # Decision Booleans
-onlineBOOL = True
+onlineBOOL = False
 
 # Get the login info from .env
 load_dotenv()
