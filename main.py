@@ -194,12 +194,13 @@ def findElement(soup, htmlElement, classEntry, size):
         if entries.getText() == size.upper():
             entry = entries
             return entry
-    print("The Element was not found")
+    print("Size not found")
     exit()
 
 
 def determineStock(entry):
     parent = entry.parent.parent.parent
+    print(parent)
     stringParent = str(parent)
     if (stringParent.find('out-of-stock') != -1):
         return False

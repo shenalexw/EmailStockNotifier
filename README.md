@@ -53,14 +53,14 @@ DEFAULTINPUTS = {
 ```
 Input the url for the item: https://www.zara.com/us/en/plaid-blazer-p02010745.html
 
-        0 : XS
-        1 : S
-        2 : M
-        3 : L
-        4 : XL
-        5 : XXL
+        1 : XS
+        2 : S
+        3 : M
+        4 : L
+        5 : XL
+        6 : XXL
         
-Input the size of the item (0 - 5): 2
+Input the size of the item (1 - 6): 2
 Input the timer to refresh the item (1 - 60 seconds): 20
 Input the email you wish to recieve a notification once the product is in stock (email@gmail.com):email@gmail.com
 ```
