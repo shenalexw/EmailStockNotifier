@@ -8,6 +8,8 @@
 - [Author(s)](#author-info)
 
 ## Abstract
+EMAIL NOTIFIER - Does not work due to gmail update May 2022
+
 This project was created in order to recieve an email once a product is in stock.
 
 Note: This project only works for products from Zara
